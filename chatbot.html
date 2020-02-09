@@ -167,18 +167,35 @@ color: #fff;
 padding: 12px 20px;
 border: none;
 cursor: pointer;
-width: 100%;
+width: 48%;
 margin-bottom:10px;
 opacity: 0.8;
+}
+
+.btnwhite{
+  background-color: white;
+  padding: 7px 10px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  width: 40px;
+  margin-bottom:10px;
+  opacity: 0.8;
+  border: 1px solid grey;
+  border-radius: 5px;
+  color: grey;
+  margin-left: 20px;
 }
 /* Style cancel button */
 .form-container .cancel {
 background-color: #cc0000;
 }
 /* Hover effects for buttons */
-.form-container .btn:hover, .open-button:hover {
+.form-container .btn:hover, .open-button:hover, .btnwhite:hover {
 opacity: 1;
 }
+
+
   
   </style>
 
@@ -562,20 +579,24 @@ opacity: 1;
 
           </div>
 
-          <div class="form-popup" id="popupForm">
-            <form action="/action_page.php" class="form-container">
+          <div class="form-popup" id="popupForm" style="overflow-y: scroll; max-height: 50%; ">
+            <div class="form-container">
               <h2>Add Data</h2>
-              <label for="email">
+              <label>
               <strong>Question</strong>
               </label>
-              <input type="text" placeholder="Your Email" name="email" required>
-              <label for="psw">
-              <strong>Choice</strong>
+              <input id="formquestion" type="text" placeholder=""  >
+              <label>
+              <strong>Choice</strong> 
               </label>
-              <input type="password" placeholder="Your Password" name="psw" required>
-              <button type="submit" class="btn">Done</button>
-              <button type="submit" class="btn cancel" onclick="closeForm()">Cancel</button>
-            </form>
+              <button class="btnwhite" onclick="formaddchoice(this)">+</button>
+              <div id="formchoicearea">
+                <input type="text" placeholder="" >
+              </div>
+              
+              <button class="btn" onclick="doneform()">Done</button>
+              <button class="btn cancel" onclick="closeForm()">Cancel</button>
+            </div>
           </div>
 
           
@@ -645,15 +666,15 @@ opacity: 1;
               a:"有",
               q:"點解您會食魚油？",
               c:[{
-                q:"處理心血管問題",
+                a:"處理心血管問題",
               },
               {
-                q:"減少身體炎症",
+                a:"減少身體炎症",
               },
               {
-                q:"促進腦部功能",
+                a:"促進腦部功能",
               },{
-                q:"改善關節功能及活動性",
+                a:"改善關節功能及活動性",
               }]
             },
             {
@@ -665,12 +686,16 @@ opacity: 1;
 
       function divetree(data,ans){
         if (data.c)
-          ans+="<li>"
+          ans+="<li onclick='addtree(this)'>"
         else
           ans+="<li onclick='addtree(this)'>"
         
-        if (data.a)
-          ans+= "<a>"+data.a+': '+data.q+"</a>"
+        if (data.a){
+          if (data.q)
+            ans+= "<a>"+data.a+': '+data.q+"</a>"
+          else
+            ans+= "<a>"+data.a+"</a>"
+        }
         else
           ans+= "<a>"+data.q+"</a>"
         if (data.c){
@@ -699,8 +724,12 @@ opacity: 1;
       }
 
 
+      var canaddtree = 1;
       function addtree(x){
+        if (canaddtree==0) return;
+        canaddtree = 0;
         // console.log(x)
+
         var temptag = x
         var treelist = [];
         while (temptag.tagName!="DIV"){
@@ -726,7 +755,7 @@ opacity: 1;
           // console.log(treelist[j])
           // console.log(temppos)
           for (var k=0; k<temppos.length; k++){
-            if (temppos[k].q == treelist[j].q){
+            if (temppos[k].q == treelist[j].q||(!treelist[j].a)&&temppos[k].a == treelist[j].q){
               temproute.push(k)
               if (temppos[k].c)
                 temppos = temppos[k].c
@@ -737,18 +766,63 @@ opacity: 1;
           }
         }
 
-        console.log(temppos)
-        console.log(temproute)
+
+        nowpos = temppos
+        nowroute = temproute;
+        openForm()
       }
 
+      var nowroute,nowpos;
       gentree(treedata[0])
 
 
       function openForm() {
         document.getElementById("popupForm").style.display = "block";
+        if (Array.isArray(nowpos)){
+          // var tempq = nowpos.q;
+          var tempc = nowpos;
+          // console.log(tempq)
+          console.log(tempc)
+        } else {
+
+        }
       }
       function closeForm() {
         document.getElementById("popupForm").style.display = "none";
+        clearform()
+        canaddtree = 1;
+      }
+
+      function formaddchoice(x){
+        document.getElementById('formchoicearea').innerHTML+='<input type="text" placeholder="" >'
+      }
+
+      function doneform(){
+        var allchoice = document.getElementById('formchoicearea').getElementsByTagName('input')
+        var question = document.getElementById('formquestion').value
+        if (nowpos.c){
+          
+         
+        } else {
+          nowpos.c = []
+
+          for (var j=0; j<allchoice.length; j++){
+            if (allchoice[j].value)
+            nowpos.c.push({a:allchoice[j].value})
+          }
+
+          nowpos.q = question
+        }
+        
+       
+        gentree(treedata[0])
+        closeForm()
+        
+      }
+
+      function clearform(){
+        document.getElementById("formquestion").value = ''
+        document.getElementById("formchoicearea").innerHTML = ' <input type="text" placeholder="" >'
       }
   </script>
 </body>
